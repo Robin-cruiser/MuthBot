@@ -30,12 +30,12 @@ function createBot() {
       moveInterval = setInterval(() => {
         if (!bot || !bot.entity) return;
 
-        // rotate head randomly
+        // Random head rotation
         const yaw = Math.random() * Math.PI * 2;
         const pitch = (Math.random() - 0.5) * 0.5;
         bot.look(yaw, pitch, true);
 
-        // random small movement
+        // Random movement
         const dirs = ['forward', 'back', 'left', 'right'];
         const dir = dirs[Math.floor(Math.random() * dirs.length)];
         bot.setControlState(dir, true);
@@ -45,18 +45,20 @@ function createBot() {
           bot.setControlState(dir, false);
           bot.setControlState('jump', false);
         }, 400 + Math.random() * 600);
-      }, 8000 + Math.random() * 4000); // every 8–12s
+      }, 8000 + Math.random() * 4000);
     }, 20000);
   });
 
-  bot.on('kicked', r => {
-    console.log(`[KICKED] ${r}`);
+  bot.on('kicked', (reason) => {
+    console.log(`[KICKED] ${reason}`);
     handleReconnect();
   });
-  bot.on('error', e => {
-    console.log(`[ERROR] ${e.message}`);
+
+  bot.on('error', (err) => {
+    console.log(`[ERROR] ${err.message}`);
     handleReconnect();
   });
+
   bot.on('end', () => {
     console.log('[INFO] Disconnected');
     handleReconnect();
@@ -65,9 +67,18 @@ function createBot() {
 
 function handleReconnect() {
   if (moveInterval) clearInterval(moveInterval);
-  if (!config.reconnect.enabled) return process.exit(1);
-  console.log(`[INFO] Reconnecting in ${config.reconnect.delay / 1000}s...`);
-  reconnectTimeout = setTimeout(createBot, config.reconnect.delay);
+
+  if (!config.reconnect.enabled) {
+    console.log('[INFO] Auto-reconnect disabled. Exiting...');
+    process.exit(1);
+  }
+
+  // random 30–60 s delay
+  const base = config.reconnect.delay || 30000;
+  const delay = base + Math.random() * 30000;
+  console.log(`[INFO] Reconnecting in ${Math.round(delay / 1000)} seconds...`);
+
+  reconnectTimeout = setTimeout(createBot, delay);
 }
 
 process.on('SIGINT', () => {
