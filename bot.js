@@ -7,15 +7,17 @@ http.createServer((req, res) => res.end('bot alive')).listen(3000);
 let bot;
 let moveInterval;
 
-// your server + bot settings
+// === CONFIG ===
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
   bot: { username: "_NJ_" },
-  reconnect: { delay: 90000 } // 90 sec
+  reconnect: { delay: 180000 } // 3 minutes (to avoid throttle)
 };
 
+// === BOT CREATION ===
 function createBot() {
   console.log(`[INFO] Connecting to ${config.server.host}:${config.server.port}...`);
+
   bot = mineflayer.createBot({
     host: config.server.host,
     port: config.server.port,
@@ -25,9 +27,11 @@ function createBot() {
   });
 
   bot.on('login', () => console.log(`[SUCCESS] Logged in as ${bot.username}`));
+
   bot.on('spawn', () => {
     console.log('[SUCCESS] Spawned! Waiting 20s...');
     if (moveInterval) clearInterval(moveInterval);
+
     setTimeout(() => {
       console.log('[INFO] Random walking...');
       const dirs = ['forward', 'back', 'left', 'right', 'jump'];
@@ -39,15 +43,26 @@ function createBot() {
     }, 20000);
   });
 
-  bot.on('kicked', r => handleEnd(`[KICKED] ${r}`));
-  bot.on('error', e => handleEnd(`[ERROR] ${e.message}`));
-  bot.on('end', () => handleEnd('[INFO] Disconnected'));
+  bot.on('kicked', (reason) => {
+    console.log(`[KICKED] ${JSON.stringify(reason)}`);
+    handleEnd();
+  });
+
+  bot.on('error', (err) => {
+    console.log(`[ERROR] ${err.message}`);
+    handleEnd();
+  });
+
+  bot.on('end', () => {
+    console.log('[INFO] Disconnected');
+    handleEnd();
+  });
 }
 
-function handleEnd(msg) {
-  console.log(msg);
+// === RECONNECT ===
+function handleEnd() {
   if (moveInterval) clearInterval(moveInterval);
-  console.log(`[INFO] Reconnecting in ${config.reconnect.delay/1000}s...`);
+  console.log(`[INFO] Reconnecting in ${config.reconnect.delay / 1000}s...`);
   setTimeout(createBot, config.reconnect.delay);
 }
 
