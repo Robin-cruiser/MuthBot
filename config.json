@@ -1,0 +1,14 @@
+{
+  "server": {
+    "host": "messcraft.ovh",
+    "port": 25565,
+    "version": false
+  },
+  "bot": {
+    "username": "_NJ_"
+  },
+  "reconnect": {
+    "enabled": true,
+    "delay": 5000
+  }
+}
