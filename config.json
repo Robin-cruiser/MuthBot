@@ -2,7 +2,7 @@
   "server": {
     "host": "muthserver.aternos.me",
     "port": 16370,
-    "version": 1.21.8
+    "version": 1.21.8,
   },
   "bot": {
     "username": "_NJ_"
