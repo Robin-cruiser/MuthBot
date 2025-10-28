@@ -9,6 +9,6 @@
   },
   "reconnect": {
     "enabled": true,
-    "delay": 5000
+    "delay": 7000
   }
 }
