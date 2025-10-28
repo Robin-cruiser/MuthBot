@@ -1,0 +1,12 @@
+{
+  "name": "muthbot",
+  "version": "1.0.0",
+  "description": "Minecraft AFK bot for Aternos",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.18.0"
+  }
+}
