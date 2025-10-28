@@ -18,9 +18,7 @@ function createBot() {
     auth: 'offline'
   });
 
-  bot.on('login', () => {
-    console.log(`[SUCCESS] Logged in as ${bot.username}`);
-  });
+  bot.on('login', () => console.log(`[SUCCESS] Logged in as ${bot.username}`));
 
   bot.on('spawn', () => {
     console.log('[SUCCESS] Spawned in the world!');
@@ -28,27 +26,37 @@ function createBot() {
     if (moveInterval) clearInterval(moveInterval);
 
     setTimeout(() => {
-      console.log('[INFO] Starting random movement...');
-      const directions = ['forward', 'back', 'left', 'right', 'jump'];
+      console.log('[INFO] Starting natural movement...');
       moveInterval = setInterval(() => {
         if (!bot || !bot.entity) return;
-        const dir = directions[Math.floor(Math.random() * directions.length)];
+
+        // rotate head randomly
+        const yaw = Math.random() * Math.PI * 2;
+        const pitch = (Math.random() - 0.5) * 0.5;
+        bot.look(yaw, pitch, true);
+
+        // random small movement
+        const dirs = ['forward', 'back', 'left', 'right'];
+        const dir = dirs[Math.floor(Math.random() * dirs.length)];
         bot.setControlState(dir, true);
-        setTimeout(() => bot.setControlState(dir, false), 700);
-      }, 4000);
+        if (Math.random() < 0.3) bot.setControlState('jump', true);
+
+        setTimeout(() => {
+          bot.setControlState(dir, false);
+          bot.setControlState('jump', false);
+        }, 400 + Math.random() * 600);
+      }, 8000 + Math.random() * 4000); // every 8–12s
     }, 20000);
   });
 
-  bot.on('kicked', (reason) => {
-    console.log(`[KICKED] ${reason}`);
+  bot.on('kicked', r => {
+    console.log(`[KICKED] ${r}`);
     handleReconnect();
   });
-
-  bot.on('error', (err) => {
-    console.log(`[ERROR] ${err.message}`);
+  bot.on('error', e => {
+    console.log(`[ERROR] ${e.message}`);
     handleReconnect();
   });
-
   bot.on('end', () => {
     console.log('[INFO] Disconnected');
     handleReconnect();
