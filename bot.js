@@ -1,20 +1,38 @@
 const mineflayer = require('mineflayer');
 const http = require('http');
 
-// keep-alive server for UptimeRobot
-http.createServer((req, res) => res.end('bot alive')).listen(3000);
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is alive and running!');
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`[HTTP] Port ${PORT} is already in use, retrying in 5s...`);
+    setTimeout(() => {
+      server.close();
+      server.listen(PORT, '0.0.0.0');
+    }, 5000);
+  } else {
+    console.error(`[HTTP] Server error: ${err.message}`);
+  }
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[HTTP] Keep-alive server running on port ${PORT}`);
+});
 
 let bot;
 let moveInterval;
 
-// === CONFIG ===
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
   bot: { username: "_NJ_" },
-  reconnect: { delay: 180000 } // 3 minutes (to avoid throttle)
+  reconnect: { delay: 180000 }
 };
 
-// === BOT CREATION ===
 function createBot() {
   console.log(`[INFO] Connecting to ${config.server.host}:${config.server.port}...`);
 
@@ -23,7 +41,9 @@ function createBot() {
     port: config.server.port,
     username: config.bot.username,
     version: config.server.version,
-    auth: 'offline'
+    auth: 'offline',
+    checkTimeoutInterval: 60000,
+    keepAlive: true
   });
 
   bot.on('login', () => console.log(`[SUCCESS] Logged in as ${bot.username}`));
@@ -49,7 +69,13 @@ function createBot() {
   });
 
   bot.on('error', (err) => {
-    console.log(`[ERROR] ${err.message}`);
+    if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+      console.log(`[ERROR] Cannot connect to server (${err.code}). Server may be offline.`);
+    } else if (err.message && err.message.includes('timed out')) {
+      console.log(`[ERROR] Connection timeout. Server not responding to keepalive packets.`);
+      } else {
+      console.log(`[ERROR] ${err.message}`);
+    }
     handleEnd();
   });
 
@@ -59,7 +85,6 @@ function createBot() {
   });
 }
 
-// === RECONNECT ===
 function handleEnd() {
   if (moveInterval) clearInterval(moveInterval);
   console.log(`[INFO] Reconnecting in ${config.reconnect.delay / 1000}s...`);
