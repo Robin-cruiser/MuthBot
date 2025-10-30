@@ -29,7 +29,7 @@ let moveInterval;
 
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
-  bot: { username: "MuthBot" },
+  bot: { username: "MuthBot", password: "njbruto" }, // password for /register & /login
   reconnect: { delay: 180000 }
 };
 
@@ -47,6 +47,19 @@ function createBot() {
   });
 
   bot.on('login', () => console.log(`[SUCCESS] Logged in as ${bot.username}`));
+
+  // AUTO REGISTER / LOGIN
+  bot.on('message', (message) => {
+    const msg = message.toString().toLowerCase();
+
+    if (msg.includes('/register') || msg.includes('register')) {
+      bot.chat(`/register ${config.bot.password} ${config.bot.password}`);
+      console.log('[AUTH] Sent /register');
+    } else if (msg.includes('/login') || msg.includes('login')) {
+      bot.chat(`/login ${config.bot.password}`);
+      console.log('[AUTH] Sent /login');
+    }
+  });
 
   bot.on('spawn', () => {
     console.log('[SUCCESS] Spawned! Waiting 20s...');
@@ -73,7 +86,7 @@ function createBot() {
       console.log(`[ERROR] Cannot connect to server (${err.code}). Server may be offline.`);
     } else if (err.message && err.message.includes('timed out')) {
       console.log(`[ERROR] Connection timeout. Server not responding to keepalive packets.`);
-      } else {
+    } else {
       console.log(`[ERROR] ${err.message}`);
     }
     handleEnd();
