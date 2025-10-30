@@ -29,7 +29,7 @@ let moveInterval;
 
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
-  bot: { username: "_NJ_" },
+  bot: { username: "MuthBot" },
   reconnect: { delay: 180000 }
 };
 
