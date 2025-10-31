@@ -15,7 +15,7 @@ let antiAFK;
 
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
-  bot: { username: "MuthBot", password: "njbruto" },
+  bot: { username: "Muth", password: "njbruto" },
   reconnect: { delay: 7000 }
 };
 
