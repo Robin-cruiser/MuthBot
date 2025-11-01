@@ -1,4 +1,4 @@
-const mineflayer = require('mineflayer');
+Const mineflayer = require('mineflayer');
 const http = require('http');
 
 // Keep Render awake
@@ -12,7 +12,6 @@ http.createServer((req, res) => {
 
 let bot;
 let antiAFK;
-let restartTimer; // <-- Added this to manage the timer
 
 const config = {
   server: { host: "muthserver.aternos.me", port: 25565, version: "1.21.1" },
@@ -52,11 +51,8 @@ function createBot() {
   // On spawn
   bot.once('spawn', () => {
     console.log('[SPAWN] Bot spawned, enabling anti-AFK...');
-    // Clear old timers just in case
     if (antiAFK) clearInterval(antiAFK);
-    if (restartTimer) clearInterval(restartTimer);
 
-    // Anti-AFK
     antiAFK = setInterval(() => {
       try {
         bot.setControlState('jump', true);
@@ -65,27 +61,11 @@ function createBot() {
         console.error('[AFK] Error:', e.message);
       }
     }, 30000); // every 30 seconds
-
-    // --- NEW RESTART LOGIC ---
-    const restartInterval = 15 * 60 * 60 * 1000; // 15 hours in milliseconds
-    console.log(`[RESTART] Auto-restart scheduled every 15 hours.`);
-    
-    restartTimer = setInterval(() => {
-      console.log('[RESTART] Sending /restart command...');
-      try {
-        bot.chat('/restart');
-      } catch (e) {
-        console.error('[RESTART] Error sending command:', e.message);
-      }
-    }, restartInterval);
-    // --- END NEW LOGIC ---
   });
 
   bot.on('end', () => {
     console.log('[INFO] Disconnected. Reconnecting in 7s...');
-    // Clear timers on disconnect
     if (antiAFK) clearInterval(antiAFK);
-    if (restartTimer) clearInterval(restartTimer); // <-- Clean up restart timer
     setTimeout(createBot, config.reconnect.delay);
   });
 
